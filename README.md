@@ -15,9 +15,12 @@ GitHub Pages 提供静态页面，腾讯云服务器运行 Python 计分接口�
 实时比赛数据保存在腾讯云 `/var/lib/agricola4/scores.sqlite3`，不保存在 GitHub。
 `config.js` 配置后台 HTTPS 根地址。后台 CORS 允许 `https://huang-yuxiao.github.io`。
 
-管理员删除密码只在服务器的 `/etc/agricola4/admin.env` 中以哈希配置，不写入前端或仓库。
+管理员修改、调序与删除共用的密码只在服务器的 `/etc/agricola4/admin.env` 中以哈希配置，不写入前端或仓库。
 删除入口位于查对局的每条记录中，删除后按剩余比赛重算全部榜单。归档保存在 SQLite 的 `deleted_submissions` 表。
 管理员可在服务器使用 `AGRICOLA_DB=/var/lib/agricola4/scores.sqlite3 .venv/bin/python restore_submission.py <回执UUID>` 恢复误删；若同一桌号已重新上报，恢复会拒绝覆盖新记录。
+
+查对局支持修改原记录（保留回执、时间、顺序）以及按目标桌号插入其前面计分。两项操作均验证管理员密码，并重算榜单。修改及调序记录保存在 `submission_audit`，计分顺序保存在 `submission_order`；删除后保留顺序，恢复仍回到原位置。
+桌号在所有平台间互斥，不区分英文字母大小写。默认上报 Studio 即时。页面每10分钟刷新并保留已有列表，也支持手动刷新；切回窗口不触发刷新。
 
 ## 计分
 
