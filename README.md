@@ -2,28 +2,20 @@
 
 网址：https://huang-yuxiao.github.io/agricola4/
 
-GitHub Pages 提供静态页面，腾讯云服务器运行 Python 计分接口并使用 SQLite 保存对局。
-玩家无需登录；提交后同时更新全阶段 ELO 和赛季 ELO。
-无需填写开桌或结束时间，以服务器上报时间结算；不再核验回合制开桌截止或15天时长。
-
-`config.js` 配置腾讯云 HTTPS API 根地址。接口不可用时页面提示连接失败并禁止提交，不会假装保存成功。
-
-## 维护
-
-`frontend-source.zip` 是前端完整源代码。解压后执行 `npm install`、`npm run build`，将 dist 文件更新到仓库根目录。
-`server.tar.gz` 是后台源码和测试，不包含数据库、密钥或账号凭据。
-实时比赛数据保存在腾讯云 `/var/lib/agricola4/scores.sqlite3`，不保存在 GitHub。
-`config.js` 配置后台 HTTPS 根地址。后台 CORS 允许 `https://huang-yuxiao.github.io`。
-
-管理员修改、调序与删除共用的密码只在服务器的 `/etc/agricola4/admin.env` 中以哈希配置，不写入前端或仓库。
-删除入口位于查对局的每条记录中，删除后按剩余比赛重算全部榜单。归档保存在 SQLite 的 `deleted_submissions` 表。
-管理员可在服务器使用 `AGRICOLA_DB=/var/lib/agricola4/scores.sqlite3 .venv/bin/python restore_submission.py <回执UUID>` 恢复误删；若同一桌号已重新上报，恢复会拒绝覆盖新记录。
-
-查对局支持修改原记录（保留回执、时间、顺序）以及按目标桌号插入其前面计分。两项操作均验证管理员密码，并重算榜单。修改及调序记录保存在 `submission_audit`，计分顺序保存在 `submission_order`；删除后保留顺序，恢复仍回到原位置。
-桌号在所有平台间互斥，不区分英文字母大小写。默认上报 Studio 即时。页面每10分钟刷新并保留已有列表，也支持手动刷新；切回窗口不触发刷新。
+GitHub Pages提供前端，腾讯云Python接口和SQLite独立运行，关闭聊天不影响上报与保存。
+玩家无需登录，支持2—4人对局。上报页仅选择已登记ID；管理员先在全阶段榜添加新ID，初始500分、0局。历史ID与别名自动保留。registered_players表持久保存新增ID。
 
 ## 计分
+秋季初始450分，每对手K为二人20、三人15、四人40/3；对手使用赛前全阶段分。Studio本局计分选手额外+5，仅加赛季。
+全阶段按经验分档：2/3/4人局前10局每对手K为60/45/40，第11—20局为40/30/(80/3)，之后20/15/(40/3)。
+达到550封顶锁分，否则15计分局后锁分，之后自动NPC；550先按计分局数少、再按冲线时间早排序。
+管理员可逐局指定NPC，本局不增加其秋季分、计分局数或+5；全阶段、实打局数及活跃奖照常统计。修改旧局按原顺序重算后续榜单。
+无需填写时间，以服务器上报时间记账；平局使用竞赛排名，如1、2、2、4。同分不同名次自动加0.001区分。
 
-使用已确认的 128 人 CSV 作为全阶段起点，新玩家从 500 开始；每对手 K 为 40（前10局）、80/3（第11至20局）、40/3（之后）。
-赛季从450开始，K=40/3，对手使用赛前全阶段分。Studio计分玩家额外+5赛季分。所有玩家默认自动进入赛季计分，忽略旧的普通NPC标记；管理员可在查对局中指定本局NPC。指定NPC不增加该局秋季分、计分局数或Studio奖励，全阶段成绩、实打局数和活跃奖仍统计。设置或取消均验证管理员密码、检查记录版本并留审计记录，按原顺序重算后续榜单。
-首次达到550时锁定为550，否则第15局结束后锁分；之后自动NPC，仍记录全阶段成绩。550分先按计分局数少，再按冲线时间早排序。真正并列采用0.5，第二第三并列填1、2、2、4。
+## 维护
+config.js配置HTTPS接口地址。frontend-source.zip是完整前端源代码；npm install及npm run build后发布dist文件。
+server.tar.gz是后台源码、服务配置和测试，不包含数据库或凭据。正式数据库/var/lib/agricola4/scores.sqlite3，备份/var/backups/agricola4。
+管理员密码只在服务器/etc/agricola4/admin.env以哈希配置，新增ID、修改、调序、指定NPC和删除共用。操作留存submission_audit。
+删除可用restore_submission.py恢复；deleted_submissions保留原始记录，submission_order保留计分顺序。桌号全平台互斥。
+榜单每10分钟刷新，也可手动刷新；切回页面不自动刷新。
+HTTPS通过certbot自动续期，Caddy配置位于/opt/agricola4/Caddyfile。
