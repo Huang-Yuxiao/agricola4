@@ -3,6 +3,9 @@
 网址：https://huang-yuxiao.github.io/agricola4/
 
 GitHub Pages提供前端，腾讯云Python接口和SQLite独立运行，关闭聊天不影响上报与保存。
+两个榜单共用道馆，点击道馆即可修改，无需密码；player_profiles保存道馆并记录修改审计，使用expectedGym防止并发覆盖。
+ELO右侧显示平均分、最高分；赛季按本届全部实际参赛局统计，包括指定NPC、锁分后NPC与超过15局。得分不含Studio奖励或用于区分名次的0.001。
+全阶段历史统计已从eloall.py的174场内嵌对局与legal_matches.txt、legal_matches_2026spring.txt还原，并逐人核对128人起点局数、均分一致；historical-stats.json保存起点原始总分与最高分，后续按全部存续逐局记录重算。旧数据按原程序的读取范围还原，未改变128人ELO或局数。
 玩家无需登录，支持2—4人对局。上报页仅选择已登记ID；管理员先在全阶段榜添加新ID，初始500分、0局。历史ID与别名自动保留。registered_players表持久保存新增ID。
 
 ## 计分
